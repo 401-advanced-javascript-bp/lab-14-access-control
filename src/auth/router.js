@@ -33,7 +33,9 @@ authRouter.get('/oauth', (req,res,next) => {
     .catch(next);
 });
 
-authRouter.post('/key', auth, (req,res,next) => {
+//resource not found
+authRouter.post('/key', auth(), (req,res,next) => {
+  //why not const?
   let key = req.user.generateKey();
   res.status(200).send(key);
 });

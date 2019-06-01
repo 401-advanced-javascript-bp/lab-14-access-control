@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('./roles-model.js');
 
+//Becky - ask
+//we want this to be true or false
+//if present true, if not present false
 const SINGLE_USE_TOKENS = !!process.env.SINGLE_USE_TOKENS;
 const TOKEN_EXPIRE = process.env.TOKEN_LIFETIME || '5m';
 const SECRET = process.env.SECRET || 'foobar';
@@ -20,8 +23,8 @@ const users = new mongoose.Schema({
 
 const capabilities = {
   admin: ['create','read','update','delete'],
-  editor: ['create', 'read', 'update'],
-  user: ['read'],
+  editor:['create', 'read', 'update'],
+  user:  ['read'],
 };
 
 users.pre('save', function(next) {
@@ -58,6 +61,7 @@ users.statics.authenticateToken = function(token) {
   
   try {
     let parsedToken = jwt.verify(token, SECRET);
+    console.log('this is parsedToken', parsedToken);
     (SINGLE_USE_TOKENS) && parsedToken.type !== 'key' && usedTokens.add(token);
     let query = {_id: parsedToken.id};
     return this.findOne(query);
