@@ -38,7 +38,7 @@ specificAuthRouter.get('/public-stuff', (req, res, next) => {
 
 // router.post('/create-a-thing) should require the create capability
 // unsure
-  specificAuthRouter.post('/create-a-thing', auth('edit'), (req, res, next) => {
+  specificAuthRouter.post('/create-a-thing', auth('create'), (req, res, next) => {
     let key = req.user.generateKey();
     res.status(200).send(key);
   });
@@ -49,6 +49,7 @@ specificAuthRouter.get('/public-stuff', (req, res, next) => {
   })
 
 // router.patch('/jp) should require the update capability
+//returns a type of user, even though I entered a role of editor
   specificAuthRouter.patch('/jp', auth('update'), (req, res, next) => {
     res.status(200).send('What is JP? Are you being meta?');
   });
@@ -64,7 +65,5 @@ specificAuthRouter.get('/public-stuff', (req, res, next) => {
 //   specificAuthRouter.get('/everything', auth(capabilities.admin), (req, res, next) => {
 //     res.status(200).send('youre a super user');
 //   });
-
-
 
   module.exports = specificAuthRouter;
