@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('./roles-model.js');
 
+//Becky - ask
+//we want this to be true or false
+//if present true, if not present false
 const SINGLE_USE_TOKENS = !!process.env.SINGLE_USE_TOKENS;
 const TOKEN_EXPIRE = process.env.TOKEN_LIFETIME || '5m';
 const SECRET = process.env.SECRET || 'foobar';
@@ -15,14 +18,32 @@ const users = new mongoose.Schema({
   username: {type:String, required:true, unique:true},
   password: {type:String, required:true},
   email: {type: String},
-  role: {type: String, default:'user', enum: ['admin','editor','user']},
+  // roles: {type: String, default:'user', enum: ['admin','editor','user']},
+  role: { type:String, required: true, ref: 'roles' },
+    // editor: { type: mongoose.Schema.Types.ObjectId, ref: 'Editor' },
+    // user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+
+//Becky - Are these supposed to be nested? I could try nesting into two more schemas, but am not sure thats accurate
+
+});
+const roles = new mongoose.Schema({
+  role: {type:String, required: true, enum: ['admin', 'editor', 'user'], ref: 'capabilities' },
 });
 
-const capabilities = {
-  admin: ['create','read','update','delete'],
-  editor: ['create', 'read', 'update'],
-  user: ['read'],
-};
+// const roles = new mongoose.Schema({
+//   role: {type:String, required: true, unique:true },
+//   capabilities: {type: Array, required:true }
+// });
+
+const capabilities = mongoose.Schema ({
+  admin: { type:Array, required: true, permissions: ['create','read','update','delete']},
+  editor: { type:Array, required: true, permissions: ['create', 'read', 'update'] },
+  user:  { type:Array, required: true, permissions: ['read'] }
+});
+
+const permissions = mongoose.Schema({
+
+})
 
 users.pre('save', function(next) {
   bcrypt.hash(this.password, 10)
@@ -58,6 +79,7 @@ users.statics.authenticateToken = function(token) {
   
   try {
     let parsedToken = jwt.verify(token, SECRET);
+    console.log('this is parsedToken', parsedToken);
     (SINGLE_USE_TOKENS) && parsedToken.type !== 'key' && usedTokens.add(token);
     let query = {_id: parsedToken.id};
     return this.findOne(query);
@@ -86,6 +108,7 @@ users.methods.generateToken = function(type) {
   };
   
   let options = {};
+  //Becky - !! makes the second condition truthy. Sometimes the && while not catch that the second condition is true or false. Instead it will reference the value.
   if ( type !== 'key' && !! TOKEN_EXPIRE ) { 
     options = { expiresIn: TOKEN_EXPIRE };
   }
